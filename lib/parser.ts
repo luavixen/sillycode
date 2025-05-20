@@ -101,7 +101,6 @@ addEmote('B)', EmoteKind.SUNGLASSES);
 addEmote(';(', EmoteKind.CRYING);
 addEmote(';)', EmoteKind.WINKING);
 
-
 /**
  * parses sillycode markup into a list of {@link Part}s
  */
@@ -117,107 +116,152 @@ export function parse(input: string): Part[] {
 
   // flushes the buffer as a text part if it's not empty
   function flush(): void {
-    if (buffer !== '') {
+    if (buffer) {
       emit({ type: 'text', text: buffer });
       buffer = '';
     }
   }
 
-  // main parsing loop:
+  // parses a tag body into a part
+  function parseTag(body: string): Part | null {
+    if (!body) {
+      return null;
+    }
 
-  var state: 'text' | 'escape' | 'tag' = 'text' as any;
+    // check for style:
+    var style = styleParts[body];
+    if (style) {
+      return style;
+    }
 
+    // check for emote:
+    var emote = emoteParts[body];
+    if (emote) {
+      return emote;
+    }
+
+    // check for color push:
+    var color = /^color=(#[0-9a-fA-F]{6})$/.exec(body);
+    if (color) {
+      return { type: 'color', enable: true, color: color[1]! };
+    }
+
+    // check for color pop:
+    if (body === '/color') {
+      return { type: 'color', enable: false };
+    }
+
+    return null;
+  }
+
+  // attempts to parse a tag at the current position
+  function attemptTag(closeIndex: number): boolean {
+    // find the last opening bracket
+    var openIndex = buffer.lastIndexOf('[');
+    if (openIndex < 0) {
+      return false;
+    }
+
+    // detect escape
+    var lastPart = parts[parts.length - 1];
+    if (lastPart && lastPart.type === 'escape' && openIndex === 0) {
+      return false;
+    }
+
+    // extract the tag body
+    var body = buffer.slice(openIndex + 1, closeIndex);
+
+    // parse the tag
+    var part = parseTag(body);
+    if (part) {
+      // remove the tag from the buffer
+      buffer = buffer.slice(0, openIndex);
+      // emit both the remaining buffer and the parsed part
+      flush();
+      emit(part);
+      // we parsed a tag
+      return true;
+    }
+
+    // we did not parse a tag
+    return false;
+  }
+
+  // is the next character escaped?
+  var escape = false;
+
+  // main parsing loop
   for (var i = 0; i < input.length; i++) {
     var char = input[i]!;
 
-    // if this is normal text, including escape characters:
-    if (state === 'text' || state === 'escape') {
-      // if this is not an escape:
-      if (state === 'text') {
-        // check for tag:
-        if (char === '[') {
-          flush();
-          state = 'tag';
-          continue;
-        }
-        // check for escape:
-        if (char === '\\') {
-          flush();
-          emit({ type: 'escape' });
-          state = 'escape';
-          continue;
-        }
-      } else {
-        // this character was escaped,
-        // switch back to text state after handling it normally:
-        state = 'text';
-      }
-
-      // check for newline:
-      // we always do this, even if we're in an escape state
-      if (char === '\n') {
+    // if we are not escaping
+    if (!escape) {
+      // check for escape
+      if (char === '\\') {
+        escape = true;
         flush();
-        emit({ type: 'newline' });
+        emit({ type: 'escape' });
         continue;
       }
+      // check for tag close
+      if (char === ']') {
+        if (attemptTag(i)) {
+          continue;
+        }
+      }
+    }
 
-      // handle character normally:
-      buffer += char;
+    // make sure to reset the escape flag
+    escape = false;
+
+    // check for newline
+    if (char === '\n') {
+      flush();
+      emit({ type: 'newline' });
       continue;
     }
 
-    // if this is a tag:
-    if (char === ']') {
-      // reset state
-      state = 'text';
-
-      // check for style:
-      var style = styleParts[buffer];
-      if (style) {
-        buffer = '';
-        emit(style);
-        continue;
-      }
-
-      // check for emote:
-      var emote = emoteParts[buffer];
-      if (emote) {
-        buffer = '';
-        emit(emote);
-        continue;
-      }
-
-      // check for color push:
-      var color = /^color=(#[0-9a-fA-F]{6})$/.exec(buffer);
-      if (color) {
-        buffer = '';
-        emit({ type: 'color', enable: true, color: color[1]! });
-        continue;
-      }
-
-      // check for color pop:
-      if (buffer === '/color') {
-        buffer = '';
-        emit({ type: 'color', enable: false });
-        continue;
-      }
-
-      // not a valid tag, so we'll just render it as text
-      buffer = '[' + buffer + ']';
-    } else {
-      // collect the body of the tag in the buffer
-      buffer += char;
-    }
+    // collect normal characters in the buffer
+    buffer += char;
   }
 
-  // flush any remaining text:
-
-  if (state === 'tag') {
-    buffer = '[' + buffer;
-  }
-
+  // flush any remaining text
   flush();
 
   // we are done :3
   return parts;
+}
+
+
+/** counts the number of unicode scalars in a string */
+function countUnicodeScalars(string: string): number {
+  var count = 0;
+
+  for (var i = 0; i < string.length; i++) {
+    var code = string.charCodeAt(i);
+    if (code >= 0xD800 && code <= 0xDBFF) {
+      i++;
+    }
+    count++;
+  }
+
+  return count;
+}
+
+
+/** calculates the length of a list of parts */
+export function length(parts: Part[]): number {
+  var length = 0;
+
+  parts.forEach(function (part) {
+    if (part.type === 'text') {
+      length += countUnicodeScalars(part.text);
+    } else if (part.type === 'newline') {
+      length += 1;
+    } else if (part.type === 'emote') {
+      length += 1;
+    }
+  });
+
+  return length;
 }

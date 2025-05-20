@@ -1,9 +1,13 @@
 {
   "name": "sillycode",
-  "version": "0.0.1",
+  "version": "0.0.2",
 
   "type": "module",
   "module": "./lib/index.ts",
+
+  "scripts": {
+    "build": "rollup -c"
+  },
 
   "devDependencies": {
     "@happy-dom/global-registrator": "^17.4.7",

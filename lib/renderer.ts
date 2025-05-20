@@ -1,5 +1,5 @@
-import { EmoteKind, StyleKind, type ColorPart, type ColorValue, type EmotePart, type EscapePart, type NewlinePart, type Part, type StylePart, type TextPart } from './parser.ts';
-
+import { EmoteKind, StyleKind } from './parser.ts';
+import type { ColorPart, ColorValue, EmotePart, EscapePart, NewlinePart, Part, StylePart, TextPart } from './parser.ts';
 
 var escapeHtmlRegex = /[&<>"']/g;
 
@@ -63,9 +63,6 @@ emoteKindToTag[EmoteKind.WINKING    ] = ';)';
  */
 export function render(parts: Part[], isEditor?: boolean): string {
   if (isEditor !== true) isEditor = false;
-
-  // html output
-  var html = '';
 
   // html output
   var html = '';
