@@ -57,10 +57,13 @@ emoteKindToTag[EmoteKind.WINKING    ] = ';)';
 
 
 /**
- * renders a list of {@link Part}s as HTML
- * @param parts - the list of parts to render
- * @param isEditor - whether the output is for an editor or not
- * @returns rendered HTML as a string
+ * Renders parsed sillycode parts as HTML.
+ *
+ * Set `isEditor` to `true` to include visible markup tags for editing purposes.
+ *
+ * @param parts The array of parsed parts to render
+ * @param isEditor Whether the output is for an editor or not
+ * @returns The rendered HTML as a string
  */
 export function render(parts: Part[], isEditor?: boolean): string {
   if (isEditor !== true) isEditor = false;

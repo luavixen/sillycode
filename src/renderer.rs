@@ -363,8 +363,9 @@ impl Renderer {
 
 }
 
-/// renders a list of [Part]s as HTML,
-/// set is_editor to true to include "meta" output like tags and backslashes
+/// Renders parsed sillycode parts as HTML.
+///
+/// Set `is_editor` to `true` to include visible markup tags for editing purposes.
 pub fn render(parts: impl IntoIterator<Item = Part>, is_editor: bool) -> String {
   let mut renderer = Renderer::new();
   renderer.is_editor = is_editor;

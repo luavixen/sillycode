@@ -1,6 +1,28 @@
 
 /**
- * generates sillycode markup from the children of a DOM element
+ * DOM utilities for sillycode parsing and rendering.
+ *
+ * This module provides functions to work with sillycode in the context of the DOM,
+ * including generating sillycode markup from DOM elements and efficiently diffing
+ * DOM trees for updates.
+ */
+
+/**
+ * Generates sillycode markup from the children of a DOM element.
+ *
+ * This function extracts text content from DOM elements and converts it back to
+ * sillycode markup format. It handles text nodes and element nodes, joining
+ * multiple lines with newline characters.
+ *
+ * @param $root The root HTML element to extract content from
+ * @returns The generated sillycode markup as a string
+ *
+ * @example
+ * ```typescript
+ * const element = document.getElementById('editor');
+ * const sillycode = reverse(element);
+ * console.log(sillycode); // "[b]Hello[/b] world"
+ * ```
  */
 export function reverse($root: HTMLElement): string {
   var lines: string[] = [];
@@ -43,7 +65,22 @@ function createSiblingIterator($next: Node | null): () => Node | null {
 
 
 /**
- * diffs two DOM elements' children, returning true if any changes were made
+ * Diffs two DOM elements' children, returning true if any changes were made.
+ *
+ * This function performs an efficient diff between two DOM element trees and
+ * applies the minimal set of changes needed to make the actual tree match the
+ * expected tree. It handles adding, removing, and updating nodes as needed.
+ *
+ * The diffing algorithm:
+ * - Compares children in order
+ * - Removes nodes that are no longer needed
+ * - Adds new nodes where necessary
+ * - Updates existing nodes in place when possible
+ * - Recursively diffs child elements
+ *
+ * @param $expectedRoot The DOM element representing the desired state
+ * @param $actualRoot The DOM element to be updated to match the expected state
+ * @returns `true` if any changes were made to the actual DOM, `false` otherwise
  */
 export function diff($expectedRoot: HTMLElement, $actualRoot: HTMLElement): boolean {
   // have we made any changes?

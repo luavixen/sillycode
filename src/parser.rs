@@ -2,7 +2,7 @@ use std::fmt;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-/// the kind of styling to apply
+/// Styling options for text formatting.
 #[derive(EnumIter, Debug, Clone, Copy, PartialEq)]
 pub enum StyleKind {
   /// Bold text `[b]` - renders as `<strong>`
@@ -19,8 +19,7 @@ pub enum StyleKind {
 
 impl StyleKind {
 
-  /// returns the tag for this style (eg "b" for bold),
-  /// add a leading slash for closing tags
+  /// Returns the sillycode tag name for this style.
   pub const fn to_tag(&self) -> &str {
     match self {
       StyleKind::Bold => "b",
@@ -33,7 +32,7 @@ impl StyleKind {
 
 }
 
-/// the kind of emoticon to render
+/// Emoticon types supported by sillycode.
 #[derive(EnumIter, Debug, Clone, Copy, PartialEq)]
 pub enum EmoteKind {
   /// Smiley face `[:)]` - renders as:
@@ -43,7 +42,7 @@ pub enum EmoteKind {
   /// ![](https://sillypost.net/static/emoticons/sad.png)
   Sad,
   /// Big smile `[:D]` - renders as:
-  /// ![](https://sillypost.net/static/emoticons/bigsmile.png)
+  /// ![](https://sillypost.net/static/emoticons/colond.png)
   ColonD,
   /// Colon-three face `[:3]` - renders as:
   /// ![](https://sillypost.net/static/emoticons/colonthree.png)
@@ -64,7 +63,7 @@ pub enum EmoteKind {
 
 impl EmoteKind {
 
-  /// returns the tag for this emote (eg ":)" for smile)
+  /// Returns the sillycode tag for this emoticon.
   pub const fn to_tag(&self) -> &str {
     match self {
       EmoteKind::Smile => ":)",
@@ -78,7 +77,7 @@ impl EmoteKind {
     }
   }
 
-  /// returns the file name of this emote, no extension (eg "colonthree" for :3)
+  /// Returns the file name for this emoticon without extension.
   pub const fn to_name(&self) -> &str {
     match self {
       EmoteKind::Smile => "smile",
@@ -94,20 +93,20 @@ impl EmoteKind {
 
 }
 
-/// represents a hex color value like "#ad77f1"
+/// RGB color value with 8-bit components.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Color {
-  /// Red component (0-255)
+  /// Red component (0-255).
   pub r: u8,
-  /// Green component (0-255)
+  /// Green component (0-255).
   pub g: u8,
-  /// Blue component (0-255)
+  /// Blue component (0-255).
   pub b: u8,
 }
 
 impl Color {
 
-  /// creates a new color value
+  /// Creates a new color from RGB components.
   pub const fn new(r: u8, g: u8, b: u8) -> Self {
     Self { r, g, b }
   }
@@ -116,28 +115,27 @@ impl Color {
 
 impl fmt::Display for Color {
 
-  /// formats the color as a hex string like "#ad77f1"
+  /// Formats the color as a hexadecimal string like `"#ad77f1"`.
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(f, "#{:02x}{:02x}{:02x}", self.r, self.g, self.b)
   }
 
 }
 
-/// represents one part of some sillycode markup,
-/// can be converted back to markup with fmt::Display
+/// A single element of parsed sillycode markup.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Part {
-  /// a plain text part
+  /// Plain text content.
   Text(String),
-  /// an escape character part
+  /// Escape backslash character.
   Escape,
-  /// a newline character part
+  /// Line break character.
   Newline,
-  /// a style formatting command (enable or disable, each effect is independent)
+  /// Style formatting toggle, enable or disable, each effect is independent.
   Style(StyleKind, bool),
-  /// a color formatting command (enable or disable, acts as a stack)
+  /// Color formatting toggle, enable or disable, acts as a stack.
   Color(Color, bool),
-  /// an emoticon image part
+  /// Emoticon image.
   Emote(EmoteKind),
 }
 
@@ -202,7 +200,7 @@ impl Part {
 
 impl fmt::Display for Part {
 
-  /// formats the part as sillycode markup
+  /// Formats the part back to sillycode markup.
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match self {
       Part::Text(text) => write!(f, "{text}"),
@@ -337,12 +335,12 @@ impl Parser {
 
 }
 
-/// parses sillycode markup into a list of [Part]s
+/// Parses sillycode markup into a list of parts.
 pub fn parse(input: &str) -> Vec<Part> {
   Parser::new().parse(input)
 }
 
-/// calculates the length of a list of parts
+/// Calculates the display length of parsed parts.
 pub fn length(parts: &[Part]) -> usize {
   parts.iter().fold(0, |acc, part| {
     match part {

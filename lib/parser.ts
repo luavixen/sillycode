@@ -1,67 +1,82 @@
-
-
-/** the kind of styling to apply */
+/**
+ * Styling options for text formatting.
+ */
 export enum StyleKind {
+  /** Bold text `[b]` - renders as `<strong>` */
   BOLD = 'b',
+  /** Italic text `[i]` - renders as `<em>` */
   ITALIC = 'i',
+  /** Underlined text `[u]` - renders as `<ins>` */
   UNDERLINE = 'u',
+  /** Strikethrough text `[s]` - renders as `<del>` */
   STRIKETHROUGH = 's',
+  /** Link `[url]` - renders as `<a href="...">` */
   LINK = 'url',
 }
 
-/** the kind of emoticon to render */
+/**
+ * Emoticon types supported by sillycode.
+ */
 export enum EmoteKind {
-  // values are filenames in the /static/emoticons directory,
-  // without the .png extension
+  /** Smiley face `[:)]` - renders as: ![](https://sillypost.net/static/emoticons/smile.png) */
   SMILE = 'smile',
+  /** Sad face `[:(]` - renders as: ![](https://sillypost.net/static/emoticons/sad.png) */
   SAD = 'sad',
+  /** Big smile `[:D]` - renders as: ![](https://sillypost.net/static/emoticons/colond.png) */
   COLON_D = 'colond',
+  /** Colon-three face `[:3]` - renders as: ![](https://sillypost.net/static/emoticons/colonthree.png) */
   COLON_THREE = 'colonthree',
+  /** Fearful face `[D:]` - renders as: ![](https://sillypost.net/static/emoticons/fearful.png) */
   FEARFUL = 'fearful',
+  /** Sunglasses `[B)]` - renders as: ![](https://sillypost.net/static/emoticons/sunglasses.png) */
   SUNGLASSES = 'sunglasses',
+  /** Crying face `[;(]` - renders as: ![](https://sillypost.net/static/emoticons/crying.png) */
   CRYING = 'crying',
+  /** Winking face `[;)]` - renders as: ![](https://sillypost.net/static/emoticons/winking.png) */
   WINKING = 'winking',
 }
 
-/** represents a hex color value like "#ad77f1" */
+/** RGB color value with 8-bit components, represented as a hex string like `"#ad77f1"`. */
 export type Color = string;
 
-/** regular text content part */
+/** Regular text content part. */
 export type TextPart = {
   type: 'text';
   text: string;
 };
 
-/** escape character part */
+/** Escape backslash character part. */
 export type EscapePart = {
   type: 'escape';
 };
 
-/** newline character part */
+/** Line break character part. */
 export type NewlinePart = {
   type: 'newline';
 };
 
-/** style formatting command (enable or disable, each effect is independent) */
+/** Style formatting toggle, enable or disable, each effect is independent. */
 export type StylePart = {
   type: 'style';
   style: StyleKind;
   enable: boolean;
 };
 
-/** color formatting command (enable or disable, acts as a stack) */
+/** Color formatting toggle, enable or disable, acts as a stack. */
 export type ColorPart = { type: 'color' } & (
   { enable: true, color: Color } |
   { enable: false }
 );
 
-/** emoticon image part */
+/** Emoticon image part. */
 export type EmotePart = {
   type: 'emote';
   emote: EmoteKind;
 };
 
-/** represents one part of some sillycode markup */
+/**
+ * A single element of parsed sillycode markup.
+ */
 export type Part =
   | TextPart
   | EscapePart
@@ -102,7 +117,10 @@ addEmote(';(', EmoteKind.CRYING);
 addEmote(';)', EmoteKind.WINKING);
 
 /**
- * parses sillycode markup into a list of {@link Part}s
+ * Parses sillycode markup into a list of parts.
+ *
+ * @param input The sillycode markup string to parse
+ * @returns An array of parsed parts
  */
 export function parse(input: string): Part[] {
   var parts: Part[] = [];
@@ -251,7 +269,12 @@ function countUnicodeScalars(string: string): number {
 }
 
 
-/** calculates the length of a list of parts */
+/**
+ * Calculates the display length of parsed parts.
+ *
+ * @param parts The array of parsed parts to measure
+ * @returns The display length as a number of visible characters
+ */
 export function length(parts: Part[]): number {
   var length = 0;
 

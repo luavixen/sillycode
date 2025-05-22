@@ -9,6 +9,9 @@ rollup.config.js
 # source
 lib
 
+# docs
+docs
+
 # rust
 src
 target
