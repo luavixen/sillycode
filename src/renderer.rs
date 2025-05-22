@@ -156,14 +156,14 @@ impl Renderer {
   }
 
   /// opens all elements in the element stack
-  fn open_all(&mut self, elements: &Vec<Element>) {
+  fn open_all(&mut self, elements: &[Element]) {
     for element in elements.iter() {
       self.open(element);
     }
   }
 
   /// closes all elements in the element stack in reverse order
-  fn close_all(&mut self, elements: &Vec<Element>) {
+  fn close_all(&mut self, elements: &[Element]) {
     for element in elements.iter().rev() {
       self.close(element);
     }

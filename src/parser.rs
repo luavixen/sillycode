@@ -272,7 +272,7 @@ impl Parser {
   /// parses sillycode markup
   fn parse(mut self, input: &str) -> Vec<Part> {
     // main parsing loop
-    for (i, char) in input.chars().enumerate() {
+    for char in input.chars() {
       // if we are not escaping
       if !self.escape {
         // check for escape

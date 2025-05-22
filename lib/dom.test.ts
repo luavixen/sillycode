@@ -82,16 +82,26 @@ function renderSillycodeIntoDiv(markup: string, isEditor?: boolean): HTMLDivElem
   return $root;
 }
 
+test('diff: no changes', () => {
+  var $expected = renderSillycodeIntoDiv('hello guys [i]it\'s me![/i] [:3] teehee');
+  var $actual = renderSillycodeIntoDiv('hello guys [i]it\'s me![/i] [:3] teehee');
+
+  var dirty = diff($expected, $actual);
+
+  expect(dirty).toBe(false);
+  expect($actual.innerHTML).toBe($expected.innerHTML);
+});
+
 test('diff: basic differences', () => {
   var $expected = renderSillycodeIntoDiv('hello guys [i]it\'s me![/i] [:3] teehee');
   var $actual = renderSillycodeIntoDiv('hello guys [b]it\'s me![/b] [:)] teehee');
 
   expect($actual.innerHTML).not.toBe($expected.innerHTML);
 
-  var $result = diff($expected, $actual) as HTMLDivElement;
+  var dirty = diff($expected, $actual);
 
-  expect($result).toBe($actual);
-  expect($result.innerHTML).toBe($expected.innerHTML);
+  expect(dirty).toBe(true);
+  expect($actual.innerHTML).toBe($expected.innerHTML);
 });
 
 test('diff: more advanced differences also in editor mode', () => {
@@ -100,20 +110,20 @@ test('diff: more advanced differences also in editor mode', () => {
 
   expect($actual.innerHTML).not.toBe($expected.innerHTML);
 
-  var $result = diff($expected, $actual) as HTMLDivElement;
+  var dirty = diff($expected, $actual);
 
-  expect($result).toBe($actual);
-  expect($result.innerHTML).toBe($expected.innerHTML);
+  expect(dirty).toBe(true);
+  expect($actual.innerHTML).toBe($expected.innerHTML);
 });
 
 test('diff: multiple lines', () => {
   var $expected = renderSillycodeIntoDiv('this text is on\nmultiple lines, and has a trailing newline\n');
   var $actual = renderSillycodeIntoDiv('this text is on multiple lines, and has a trailing newline\n\n');
 
-  var $result = diff($expected, $actual) as HTMLDivElement;
+  var dirty = diff($expected, $actual);
 
-  expect($result).toBe($actual);
-  expect($result.innerHTML).toBe($expected.innerHTML);
+  expect(dirty).toBe(true);
+  expect($actual.innerHTML).toBe($expected.innerHTML);
 });
 
 test('diff: avoids unnecessary changes', () => {
@@ -125,15 +135,15 @@ test('diff: avoids unnecessary changes', () => {
   var $oldUnderline = $actual.querySelector('u');
   var $oldLastText = $actual.lastChild;
 
-  var $result = diff($expected, $actual) as HTMLDivElement;
+  var dirty = diff($expected, $actual);
 
-  expect($result).toBe($actual);
-  expect($result.innerHTML).toBe($expected.innerHTML);
+  expect(dirty).toBe(true);
+  expect($actual.innerHTML).toBe($expected.innerHTML);
 
-  var $newFirstText = $result.firstChild;
-  var $newEmote = $result.querySelector('img');
-  var $newUnderline = $result.querySelector('u');
-  var $newLastText = $result.lastChild;
+  var $newFirstText = $actual.firstChild;
+  var $newEmote = $actual.querySelector('img');
+  var $newUnderline = $actual.querySelector('u');
+  var $newLastText = $actual.lastChild;
 
   expect($newFirstText).toBe($oldFirstText);
   expect($newEmote).toBe($oldEmote);

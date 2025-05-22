@@ -9,7 +9,7 @@ export default {
     name: 'sillycode',
     format: 'iife',
     sourcemap: false,
-    banner: `/**\n * sillycode.js v${pkg.version}\n * made with love by lua <3\n */`
+    banner: `/**\n * sillycode.js v${pkg.version}\n * made with love by lua <3\n */\n`
   },
   plugins: [typescript()]
 };
