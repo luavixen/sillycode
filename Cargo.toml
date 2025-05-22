@@ -1,7 +1,28 @@
 [package]
 name = "sillycode"
-version = "0.0.2"
-edition = "2024"
+version = "0.0.3"
+edition = "2021"
+
+description = "Fast and safe implementation of sillycode parsing and rendering"
+authors = ["Lua MacDougall <lua@foxgirl.dev>"]
+license = "MIT"
+
+repository = "https://github.com/luavixen/sillycode"
+
+keywords = ["sillycode", "parser", "markup",  "html"]
+categories = ["parsing", "text-processing", "web-programming"]
+
+exclude = [
+  "/lib",
+  "/dist",
+  "/node_modules",
+  ".npmignore",
+  ".editorconfig",
+  "package.json",
+  "bun.lock",
+  "tsconfig.json",
+  "rollup.config.js"
+]
 
 [dependencies]
 strum = "0.27.1"

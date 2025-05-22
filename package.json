@@ -1,9 +1,18 @@
 {
   "name": "sillycode",
-  "version": "0.0.2",
+  "version": "0.0.3",
+
+  "description": "Fast and safe implementation of sillycode parsing and rendering",
+  "author": "Lua MacDougall <lua@foxgirl.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luavixen/sillycode"
+  },
 
   "type": "module",
-  "module": "./lib/index.ts",
+  "module": "./dist/sillycode.mjs",
+  "types": "./dist/sillycode.d.ts",
 
   "scripts": {
     "build": "rollup -c"
@@ -14,6 +23,7 @@
     "@rollup/plugin-typescript": "^12.1.2",
     "@types/bun": "latest",
     "rollup": "^4.41.0",
+    "rollup-plugin-dts": "^6.2.1",
     "tslib": "^2.8.1"
   },
   "peerDependencies": {

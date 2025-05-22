@@ -111,7 +111,6 @@ mod tests {
       parse("these [tags] are invalid ]"),
       vec![Part::Text("these [tags] are invalid ]".to_string())]
     );
-
     assert_eq!(
       parse("[url]]teehee[/color ] yea [] ]"),
       vec![

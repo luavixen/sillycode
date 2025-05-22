@@ -5,10 +5,15 @@ use strum_macros::EnumIter;
 /// the kind of styling to apply
 #[derive(EnumIter, Debug, Clone, Copy, PartialEq)]
 pub enum StyleKind {
+  /// Bold text `[b]` - renders as `<strong>`
   Bold,
+  /// Italic text `[i]` - renders as `<em>`
   Italic,
+  /// Underlined text `[u]` - renders as `<ins>`
   Underline,
+  /// Strikethrough text `[s]` - renders as `<del>`
   Strikethrough,
+  /// Link `[url]` - renders as `<a href="...">`
   Link,
 }
 
@@ -31,13 +36,29 @@ impl StyleKind {
 /// the kind of emoticon to render
 #[derive(EnumIter, Debug, Clone, Copy, PartialEq)]
 pub enum EmoteKind {
+  /// Smiley face `[:)]` - renders as:
+  /// ![](https://sillypost.net/static/emoticons/smile.png)
   Smile,
+  /// Sad face `[:(`] - renders as:
+  /// ![](https://sillypost.net/static/emoticons/sad.png)
   Sad,
+  /// Big smile `[:D]` - renders as:
+  /// ![](https://sillypost.net/static/emoticons/bigsmile.png)
   ColonD,
+  /// Colon-three face `[:3]` - renders as:
+  /// ![](https://sillypost.net/static/emoticons/colonthree.png)
   ColonThree,
+  /// Fearful face `[D:]` - renders as:
+  /// ![](https://sillypost.net/static/emoticons/fearful.png)
   Fearful,
+  /// Sunglasses `[B)]` - renders as:
+  /// ![](https://sillypost.net/static/emoticons/sunglasses.png)
   Sunglasses,
+  /// Crying face `[;(`] - renders as:
+  /// ![](https://sillypost.net/static/emoticons/crying.png)
   Crying,
+  /// Winking face `[;)]` - renders as:
+  /// ![](https://sillypost.net/static/emoticons/winking.png)
   Winking,
 }
 
@@ -76,8 +97,11 @@ impl EmoteKind {
 /// represents a hex color value like "#ad77f1"
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Color {
+  /// Red component (0-255)
   pub r: u8,
+  /// Green component (0-255)
   pub g: u8,
+  /// Blue component (0-255)
   pub b: u8,
 }
 
