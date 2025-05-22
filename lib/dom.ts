@@ -8,6 +8,9 @@ export function reverse($root: HTMLElement): string {
   for (var $child = $root.firstChild; $child != null; $child = $child.nextSibling) {
     var text = $child.textContent || '';
 
+    // replace all nbsp with spaces
+    text = text.replace(/\u00A0/g, ' ');
+
     if ($child.nodeType === Node.TEXT_NODE) {
       if (lines.length > 0) {
         lines[lines.length - 1] += text;

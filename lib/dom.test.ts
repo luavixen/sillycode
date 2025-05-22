@@ -24,23 +24,23 @@ function expectReverseRoundTrip(input: string): void {
   expect(output).toBe(input);
 }
 
-test('reverse normal text', () => {
+test('reverse: normal text', () => {
   expectReverseRoundTrip('this is just some normal text');
 });
 
-test('reverse with styles', () => {
+test('reverse: with styles', () => {
   expectReverseRoundTrip('this text has [b]bold[/b] and [i]italics[/i] in it!');
 });
 
-test('reverse with emote', () => {
+test('reverse: with emote', () => {
   expectReverseRoundTrip('this text has an emote [:3] yay!');
 });
 
-test('reverse multiple lines', () => {
+test('reverse: multiple lines', () => {
   expectReverseRoundTrip('this text is on\nmultiple lines, and has a trailing newline\n');
 });
 
-test('reverse complex example', () => {
+test('reverse: complex example', () => {
   expectReverseRoundTrip(`
 
     let's [i]just go off the [b]rails[/i] here[/b]
@@ -82,7 +82,7 @@ function renderSillycodeIntoDiv(markup: string, isEditor?: boolean): HTMLDivElem
   return $root;
 }
 
-test('diff handles basic differences', () => {
+test('diff: basic differences', () => {
   var $expected = renderSillycodeIntoDiv('hello guys [i]it\'s me![/i] [:3] teehee');
   var $actual = renderSillycodeIntoDiv('hello guys [b]it\'s me![/b] [:)] teehee');
 
@@ -94,7 +94,7 @@ test('diff handles basic differences', () => {
   expect($result.innerHTML).toBe($expected.innerHTML);
 });
 
-test('diff handles more advanced differences in editor mode', () => {
+test('diff: more advanced differences also in editor mode', () => {
   var $expected = renderSillycodeIntoDiv('\\[:3] this text has [b]bold[/b] and [i]italics[/i] in it!', true);
   var $actual = renderSillycodeIntoDiv('\\[:3] this text has bold and [s]strikethrough[/s] in it!', true);
 
@@ -106,7 +106,7 @@ test('diff handles more advanced differences in editor mode', () => {
   expect($result.innerHTML).toBe($expected.innerHTML);
 });
 
-test('diff handles multiple lines', () => {
+test('diff: multiple lines', () => {
   var $expected = renderSillycodeIntoDiv('this text is on\nmultiple lines, and has a trailing newline\n');
   var $actual = renderSillycodeIntoDiv('this text is on multiple lines, and has a trailing newline\n\n');
 
@@ -116,7 +116,7 @@ test('diff handles multiple lines', () => {
   expect($result.innerHTML).toBe($expected.innerHTML);
 });
 
-test('diff avoids unnecessary changes', () => {
+test('diff: avoids unnecessary changes', () => {
   var $expected = renderSillycodeIntoDiv('this text has a [i]few [:3][/i] differences: [url]https://example.com/[u]gwa[/u][/url] yea...');
   var $actual = renderSillycodeIntoDiv('this text has a [b]few [:D][/b] differences: [url]https://foxgirl.dev/[u]gwa[/u][/url] yea...');
 

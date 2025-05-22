@@ -1,5 +1,5 @@
 import { EmoteKind, StyleKind } from './parser.ts';
-import type { ColorPart, ColorValue, EmotePart, EscapePart, NewlinePart, Part, StylePart, TextPart } from './parser.ts';
+import type { ColorPart, Color, EmotePart, EscapePart, NewlinePart, Part, StylePart, TextPart } from './parser.ts';
 
 var escapeHtmlRegex = /[&<>"']/g;
 
@@ -21,15 +21,16 @@ function escapeHtml(text: string): string {
 }
 
 /** represents a reference to the `href` field of a link in the outputted HTML */
-interface LinkReference {
-  replacer: string;
+interface Link {
   href: string;
+  replacer: string;
 }
 
-function createLinkReference(id: number): LinkReference {
+/** creates a new link with the given id */
+function createLink(id: number): Link {
   return {
-    replacer: '§§HREF' + id + '§§',
-    href: ''
+    href: '',
+    replacer: '§§HREF' + id + '§§'
   };
 }
 
@@ -39,8 +40,8 @@ type ElementName = 'strong' | 'em' | 'ins' | 'del' | 'span' | 'a';
 /** the tag name and associated data of a HTML element in the element stack */
 type ElementData =
   | { element: Exclude<ElementName, 'span' | 'a'> }
-  | { element: 'span', color: ColorValue }
-  | { element: 'a', link: LinkReference };
+  | { element: 'span', color: Color }
+  | { element: 'a', link: Link };
 
 /** lookup table for emote tag bodies eg ":)" keyed by emote kind eg "smile" */
 var emoteKindToTag = Object.create(null) as Record<EmoteKind, string>;
@@ -58,7 +59,7 @@ emoteKindToTag[EmoteKind.WINKING    ] = ';)';
 /**
  * renders a list of {@link Part}s as HTML
  * @param parts - the list of parts to render
- * @param isEditor - whether the output is for an editor
+ * @param isEditor - whether the output is for an editor or not
  * @returns rendered HTML as a string
  */
 export function render(parts: Part[], isEditor?: boolean): string {
@@ -71,14 +72,14 @@ export function render(parts: Part[], isEditor?: boolean): string {
   var elementStack: ElementName[] = [];
 
   // color stack, matching with the element stack
-  var colorStack: ColorValue[] = [];
+  var colorStack: Color[] = [];
 
   // current link counter
   var linkCounter = 0;
   // contains all links in the order they were added
-  var linkList: LinkReference[] = [];
+  var linkList: Link[] = [];
   // contains current stack of links, matching with the element stack
-  var linkStack: LinkReference[] = [];
+  var linkStack: Link[] = [];
 
   // pushes a style element onto the element stack
   function pushStyle(element: ElementName): void {
@@ -88,7 +89,7 @@ export function render(parts: Part[], isEditor?: boolean): string {
   }
 
   // pushes a color element onto the element stack and color stack
-  function pushColor(color: ColorValue): void {
+  function pushColor(color: Color): void {
     html += '<span style="color: ' + color + '">';
 
     colorStack.push(color);
@@ -98,7 +99,7 @@ export function render(parts: Part[], isEditor?: boolean): string {
   // pushes a new link element onto the element stack,
   // while also tracking it in the link list and link stack
   function pushLink(): void {
-    var link = createLinkReference(linkCounter++);
+    var link = createLink(linkCounter++);
 
     html += '<a href="' + link.replacer + '">';
 
@@ -194,7 +195,7 @@ export function render(parts: Part[], isEditor?: boolean): string {
   // only works if isEditor is true
   function markup(text: string): void {
     if (isEditor) {
-      html += '<span class="sillycode-markup">' + text + '</span>';
+      html += '<span class="sillycode-meta">' + text + '</span>';
     }
   }
 
@@ -316,6 +317,12 @@ export function render(parts: Part[], isEditor?: boolean): string {
 
   // close the output
   html += '</div>';
+
+  // postprocess the html to add <br> tags where needed
+  html = html
+    .replace(/<div> /g, '<div>&nbsp;')
+    .replace(/ <\/div>/g, ' <br></div>')
+    .replace(/<div><\/div>/g, '<div><br></div>');
 
   // replace all link references with the actual hrefs
   linkList.forEach(function (link) {

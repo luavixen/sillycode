@@ -24,7 +24,7 @@ export enum EmoteKind {
 }
 
 /** represents a hex color value like "#ad77f1" */
-export type ColorValue = string;
+export type Color = string;
 
 /** regular text content part */
 export type TextPart = {
@@ -51,7 +51,7 @@ export type StylePart = {
 
 /** color formatting command (enable or disable, acts as a stack) */
 export type ColorPart = { type: 'color' } & (
-  { enable: true, color: ColorValue } |
+  { enable: true, color: Color } |
   { enable: false }
 );
 
@@ -155,35 +155,37 @@ export function parse(input: string): Part[] {
   }
 
   // attempts to parse a tag at the current position
-  function attemptTag(closeIndex: number): boolean {
+  function attemptTag(): boolean {
     // find the last opening bracket
-    var openIndex = buffer.lastIndexOf('[');
-    if (openIndex < 0) {
+    var index = buffer.lastIndexOf('[');
+    if (index < 0) {
       return false;
     }
 
     // detect escape
     var lastPart = parts[parts.length - 1];
-    if (lastPart && lastPart.type === 'escape' && openIndex === 0) {
+    if (lastPart && lastPart.type === 'escape' && index === 0) {
       return false;
     }
 
     // extract the tag body
-    var body = buffer.slice(openIndex + 1, closeIndex);
+    var body = buffer.slice(index + 1);
 
     // parse the tag
     var part = parseTag(body);
+
+    // if we parsed a tag
     if (part) {
       // remove the tag from the buffer
-      buffer = buffer.slice(0, openIndex);
+      buffer = buffer.slice(0, index);
       // emit both the remaining buffer and the parsed part
       flush();
       emit(part);
-      // we parsed a tag
+      // success!
       return true;
     }
 
-    // we did not parse a tag
+    // we did not parse a tag :<
     return false;
   }
 
@@ -205,7 +207,7 @@ export function parse(input: string): Part[] {
       }
       // check for tag close
       if (char === ']') {
-        if (attemptTag(i)) {
+        if (attemptTag()) {
           continue;
         }
       }
@@ -256,9 +258,7 @@ export function length(parts: Part[]): number {
   parts.forEach(function (part) {
     if (part.type === 'text') {
       length += countUnicodeScalars(part.text);
-    } else if (part.type === 'newline') {
-      length += 1;
-    } else if (part.type === 'emote') {
+    } else if (part.type === 'newline' || part.type === 'emote') {
       length += 1;
     }
   });

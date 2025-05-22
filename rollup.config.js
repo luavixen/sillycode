@@ -1,6 +1,6 @@
 import typescript from '@rollup/plugin-typescript';
 
-import sillycode from './package.json' with { type: "json" };
+import pkg from './package.json' with { type: "json" };
 
 export default {
   input: 'lib/index.ts',
@@ -9,7 +9,7 @@ export default {
     name: 'sillycode',
     format: 'iife',
     sourcemap: false,
-    banner: `/**\n * sillycode.js v${sillycode.version}\n * made with love by lua <3\n */`
+    banner: `/**\n * sillycode.js v${pkg.version}\n * made with love by lua <3\n */`
   },
   plugins: [typescript()]
 };

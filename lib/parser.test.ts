@@ -2,15 +2,15 @@ import { test, expect } from 'bun:test';
 
 import { parse, length, StyleKind } from './parser.ts';
 
-test('parse empty string', () => {
+test('parse: empty string', () => {
   expect(parse('')).toEqual([]);
 });
 
-test('parse text', () => {
+test('parse: text', () => {
   expect(parse('hello')).toEqual([{ type: 'text', text: 'hello' }]);
 });
 
-test('parse newline', () => {
+test('parse: newline', () => {
   expect(parse('hello\nworld')).toEqual([
     { type: 'text', text: 'hello' },
     { type: 'newline' },
@@ -18,7 +18,7 @@ test('parse newline', () => {
   ]);
 });
 
-test('parse basic tags', () => {
+test('parse: basic tags', () => {
   expect(parse('[b]hello[/b] world')).toEqual([
     { type: 'style', style: StyleKind.BOLD, enable: true },
     { type: 'text', text: 'hello' },
@@ -27,7 +27,7 @@ test('parse basic tags', () => {
   ]);
 });
 
-test('parse nested tags', () => {
+test('parse: nested tags', () => {
   expect(parse('[b]hello [i]world[/i][/b]')).toEqual([
     { type: 'style', style: StyleKind.BOLD, enable: true },
     { type: 'text', text: 'hello ' },
@@ -38,15 +38,15 @@ test('parse nested tags', () => {
   ]);
 });
 
-test('parse color', () => {
-  expect(parse('[color=#014554]colored text![/color]')).toEqual([
-    { type: 'color', color: '#014554', enable: true },
+test('parse: color', () => {
+  expect(parse('[color=#a834cf]colored text![/color]')).toEqual([
+    { type: 'color', color: '#a834cf', enable: true },
     { type: 'text', text: 'colored text!' },
     { type: 'color', enable: false }
   ]);
 });
 
-test('parse escaped tags', () => {
+test('parse: escaped tags', () => {
   expect(parse('\\[[b]hello\\[/b]')).toEqual([
     { type: 'escape' },
     { type: 'text', text: '[' },
@@ -57,7 +57,7 @@ test('parse escaped tags', () => {
   ]);
 });
 
-test('parse incorrectly nested tags and escapes', () => {
+test('parse: incorrectly nested tags and escapes', () => {
   expect(parse('now [b[url]https://[i]example.com[/url] is \\ wrong here \\ [/i] \\')).toEqual([
     { type: 'text', text: 'now [b' },
     { type: 'style', style: StyleKind.LINK, enable: true },
@@ -76,7 +76,7 @@ test('parse incorrectly nested tags and escapes', () => {
   ]);
 });
 
-test('parse a bunch of fake tags', () => {
+test('parse: a bunch of fake tags', () => {
   expect(parse('these [tags] are invalid ]')).toEqual([
     { type: 'text', text: 'these [tags] are invalid ]' }
   ]);
@@ -86,21 +86,21 @@ test('parse a bunch of fake tags', () => {
   ]);
 });
 
-test('length', () => {
+test('length: normal text', () => {
   expect(length(parse('hello'))).toBe(5);
   expect(length(parse('hello\nworld'))).toBe(11);
 });
 
-test('length with styles', () => {
+test('length: with styles', () => {
   expect(length(parse('hello [b]world[/b]'))).toBe(11);
   expect(length(parse('[i]goodnight [b]world[/b]'))).toBe(15);
 });
 
-test('length with emotes', () => {
+test('length: with emotes', () => {
   expect(length(parse('hello world [:D] !'))).toBe(15);
 });
 
-test('length with emojis', () => {
+test('length: with emojis', () => {
   expect(length(parse('🤔☃'))).toBe(2);
   expect(length(parse('this is a fox 🦊 from canada 🇨🇦'))).toBe(30);
 });
