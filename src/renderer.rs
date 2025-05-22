@@ -109,7 +109,7 @@ macro_rules! write_html {
 }
 
 /// writes "meta" text, usually tags like "[url]" or "[b]",
-/// wrapped in a span, to the renderer's buffer
+/// wrapped in a span, to the renderer's buffer, if isEditor is true
 macro_rules! write_meta {
   ($self:ident, $($arg:tt)*) => {
     if $self.is_editor {
@@ -156,16 +156,14 @@ impl Renderer {
   }
 
   /// opens all elements in the element stack
-  fn open_all(&mut self) {
-    let elements = self.elements.clone();
+  fn open_all(&mut self, elements: &Vec<Element>) {
     for element in elements.iter() {
       self.open(element);
     }
   }
 
   /// closes all elements in the element stack in reverse order
-  fn close_all(&mut self) {
-    let elements = self.elements.clone();
+  fn close_all(&mut self, elements: &Vec<Element>) {
     for element in elements.iter().rev() {
       self.close(element);
     }
@@ -192,17 +190,13 @@ impl Renderer {
         let preserved: Vec<Element> = self.elements[i..self.elements.len()].into();
 
         // close all preserved elements, in reverse order
-        for element in preserved.iter().rev() {
-          self.close(element);
-        }
+        self.close_all(&preserved);
 
         // close the removed element
         self.close(&removed);
 
         // re-open all preserved elements
-        for element in preserved.iter() {
-          self.open(element);
-        }
+        self.open_all(&preserved);
 
         return true;
       }
@@ -262,14 +256,17 @@ impl Renderer {
 
   /// handles newline parts
   fn on_newline(&mut self) {
+    // clone the elements to avoid borrowing issues, sorry rust
+    let elements = self.elements.clone();
+
     // close all elements used for styling to get back to the root of the tree
-    self.close_all();
+    self.close_all(&elements);
 
     // close and open a new div to start a new line
     write_html!(self, "</div><div>");
 
     // re-open all elements
-    self.open_all();
+    self.open_all(&elements);
   }
 
   /// handles style parts
@@ -344,7 +341,7 @@ impl Renderer {
     }
 
     // close all elements
-    self.close_all();
+    self.close_all(&self.elements.clone());
 
     // close the output
     write_html!(self, "</div>");

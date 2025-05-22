@@ -34,14 +34,14 @@ function createLink(id: number): Link {
   };
 }
 
-/** the tag name of a HTML element in the element stack */
-type ElementName = 'strong' | 'em' | 'ins' | 'del' | 'span' | 'a';
-
-/** the tag name and associated data of a HTML element in the element stack */
-type ElementData =
-  | { element: Exclude<ElementName, 'span' | 'a'> }
-  | { element: 'span', color: Color }
-  | { element: 'a', link: Link };
+/** represents a HTML element in the element stack */
+type Element =
+  | { name: 'strong' }
+  | { name: 'em' }
+  | { name: 'ins' }
+  | { name: 'del' }
+  | { name: 'span', color: Color }
+  | { name: 'a', link: Link };
 
 /** lookup table for emote tag bodies eg ":)" keyed by emote kind eg "smile" */
 var emoteKindToTag = Object.create(null) as Record<EmoteKind, string>;
@@ -68,99 +68,50 @@ export function render(parts: Part[], isEditor?: boolean): string {
   // html output
   var html = '';
 
-  // current element stack
-  var elementStack: ElementName[] = [];
+  // element stack
+  var elements: Element[] = [];
 
-  // color stack, matching with the element stack
-  var colorStack: Color[] = [];
-
-  // current link counter
+  // counter for link ids
   var linkCounter = 0;
-  // contains all links in the order they were added
+  // clist of all links
   var linkList: Link[] = [];
-  // contains current stack of links, matching with the element stack
-  var linkStack: Link[] = [];
 
-  // pushes a style element onto the element stack
-  function pushStyle(element: ElementName): void {
-    html += '<' + element + '>';
-
-    elementStack.push(element);
-  }
-
-  // pushes a color element onto the element stack and color stack
-  function pushColor(color: Color): void {
-    html += '<span style="color: ' + color + '">';
-
-    colorStack.push(color);
-    elementStack.push('span');
-  }
-
-  // pushes a new link element onto the element stack,
-  // while also tracking it in the link list and link stack
-  function pushLink(): void {
-    var link = createLink(linkCounter++);
-
-    html += '<a href="' + link.replacer + '">';
-
-    linkList.push(link);
-    linkStack.push(link);
-    elementStack.push('a');
-  }
-
-  // pushes an element (from ElementData) onto the element stack
-  function push(data: ElementData): void {
-    if (data.element === 'span') {
-      pushColor(data.color);
-    } else if (data.element === 'a') {
-      pushLink();
+  // opens an element
+  function open(element: Element): void {
+    if (element.name === 'span') {
+      html += '<span style="color: ' + element.color + '">';
+    } else if (element.name === 'a') {
+      html += '<a href="' + element.link.replacer + '">';
     } else {
-      pushStyle(data.element);
+      html += '<' + element.name + '>';
     }
   }
 
-  // pops an element from the element stack
-  function pop(): ElementData | null {
-    var element = elementStack.pop();
-    if (element == null) return null;
-
-    html += '</' + element + '>';
-
-    if (element === 'span') {
-      return { element: 'span', color: colorStack.pop()! };
-    }
-    if (element === 'a') {
-      return { element: 'a', link: linkStack.pop()! };
-    }
-
-    return { element: element };
+  // closes an element
+  function close(element: Element): void {
+    html += '</' + element.name + '>';
   }
 
-  // pushes a list of elements (from ElementData) onto the element stack
-  function pushAll(elements: ElementData[]): void {
-    for (var i = 0; i < elements.length; i++) {
-      push(elements[i]!);
-    }
+  // opens all elements in the element stack
+  function openAll(elements: Element[]): void {
+    elements.forEach(open);
   }
 
-  // pops all elements from the element stack
-  function popAll(): ElementData[] {
-    var elements: ElementData[] = [];
+  // closes all elements in the element stack in reverse order
+  function closeAll(elements: Element[]): void {
+    elements.slice().reverse().forEach(close);
+  }
 
-    for (;;) {
-      var data = pop();
-      if (data == null) break;
-
-      elements.push(data);
-    }
-
-    return elements;
+  // pushes an element onto the element stack
+  function push(element: Element): void {
+    open(element);
+    elements.push(element);
   }
 
   // checks if the element stack contains an element
-  function contains(element: ElementName): boolean {
-    for (var i = 0; i < elementStack.length; i++) {
-      if (elementStack[i] === element) {
+  function contains(name: Element['name']): boolean {
+    for (var i = 0; i < elements.length; i++) {
+      if (elements[i]!.name === name) {
         return true;
       }
     }
@@ -168,46 +119,64 @@ export function render(parts: Part[], isEditor?: boolean): string {
   }
 
   // removes an element from the element stack
-  function remove(element: ElementName): boolean {
-    if (!contains(element)) {
-      return false;
-    }
+  function remove(name: Element['name']): boolean {
+    for (var i = elements.length - 1; i >= 0; i--) {
+      if (elements[i]!.name === name) {
+        // remove the element from the stack
+        var removed = elements.splice(i, 1)[0]!;
+        // select all preserved elements
+        var preserved = elements.slice(i);
 
-    var elements: ElementData[] = [];
+        // close all preserved elements, in reverse order
+        closeAll(preserved);
 
-    for (;;) {
-      var data = pop();
-      if (data == null) break;
+        // close the removed element
+        close(removed);
 
-      if (data.element === element) {
-        break;
+        // re-open all preserved elements
+        openAll(preserved);
+
+        return true;
       }
-
-      elements.push(data);
     }
-
-    pushAll(elements);
-
-    return true;
-  }
-
-  // used to emit markup like [b], [/url], [:3], or the first backslash of an escape
-  // only works if isEditor is true
-  function markup(text: string): void {
-    if (isEditor) {
-      html += '<span class="sillycode-meta">' + text + '</span>';
-    }
+    return false;
   }
 
   // applies a specific style element,
   // possibly pushing/popping from the element stack
-  function apply(element: ElementName, enable: boolean) {
+  function apply(name: 'strong' | 'em' | 'ins' | 'del', enable: boolean): void {
     if (enable) {
-      if (!contains(element)) {
-        pushStyle(element);
+      if (!contains(name)) {
+        push({ name: name });
       }
     } else {
-      remove(element);
+      remove(name);
+    }
+  }
+
+  // creates a new link and adds it to the link list,
+  // then pushes it to the element stack
+  function pushLink(): void {
+    var link = createLink(linkCounter);
+    linkCounter += 1;
+    linkList.push(link);
+    push({ name: 'a', link: link });
+  }
+
+  // appends to all links in the element stack
+  function appendLink(text: string): void {
+    elements.forEach(function (element) {
+      if (element.name === 'a') {
+        element.link.href += text;
+      }
+    });
+  }
+
+  // writes "meta" text, usually tags like "[url]" or "[b]",
+  // wrapped in a span, to the renderer's buffer, if isEditor is true
+  function meta(text: string): void {
+    if (isEditor) {
+      html += '<span class="sillycode-meta">' + text + '</span>';
     }
   }
 
@@ -220,28 +189,26 @@ export function render(parts: Part[], isEditor?: boolean): string {
     html += text;
 
     // update the link hrefs
-    linkStack.forEach(function (link) {
-      link.href += text;
-    });
+    appendLink(text)
   }
 
   // handles escape parts
   function onEscape(part: EscapePart) {
     // emit the backslash if isEditor is true
     // we don't need to do anything else! it's handled by the parser
-    markup('\\');
+    meta('\\');
   }
 
   // handles newline parts
   function onNewline(part: NewlinePart) {
-    // pop all elements from the element stack to get to the root element
-    var elements = popAll();
+    // close all elements used for styling to get back to the root of the tree
+    closeAll(elements);
 
     // close and open a new div to start a new line
     html += '</div><div>';
 
-    // push all elements back onto the element stack
-    pushAll(elements);
+    // re-open all elements
+    openAll(elements);
   }
 
   // handles style parts
@@ -249,16 +216,16 @@ export function render(parts: Part[], isEditor?: boolean): string {
     // links are a special case
     if (part.style === StyleKind.LINK) {
       if (part.enable) {
-        markup('[url]');
+        meta('[url]');
         pushLink();
       } else {
         remove('a');
-        markup('[/url]');
+        meta('[/url]');
       }
     // all other styles are handled by apply
     } else {
       if (part.enable) {
-        markup('[' + part.style + ']');
+        meta('[' + part.style + ']');
       }
 
       if (part.style === StyleKind.BOLD) {
@@ -272,7 +239,7 @@ export function render(parts: Part[], isEditor?: boolean): string {
       }
 
       if (!part.enable) {
-        markup('[/' + part.style + ']');
+        meta('[/' + part.style + ']');
       }
     }
   }
@@ -280,11 +247,11 @@ export function render(parts: Part[], isEditor?: boolean): string {
   // handles color parts
   function onColor(part: ColorPart) {
     if (part.enable) {
-      markup('[color=' + part.color + ']');
-      pushColor(part.color);
+      meta('[color=' + part.color + ']');
+      push({ name: 'span', color: part.color });
     } else {
       remove('span');
-      markup('[/color]');
+      meta('[/color]');
     }
   }
 
@@ -312,22 +279,22 @@ export function render(parts: Part[], isEditor?: boolean): string {
     }
   });
 
-  // pop all elements from the element stack to close them
-  popAll();
+  // close all elements
+  closeAll(elements);
 
   // close the output
   html += '</div>';
+
+  // replace all link references with the actual hrefs
+  linkList.forEach(function (link) {
+    html = html.replace(new RegExp(link.replacer, 'g'), link.href.trim());
+  });
 
   // postprocess the html to add <br> tags where needed
   html = html
     .replace(/<div> /g, '<div>&nbsp;')
     .replace(/ <\/div>/g, ' <br></div>')
     .replace(/<div><\/div>/g, '<div><br></div>');
-
-  // replace all link references with the actual hrefs
-  linkList.forEach(function (link) {
-    html = html.replace(new RegExp(link.replacer, 'g'), link.href.trim());
-  });
 
   // we are done :3
   return html;

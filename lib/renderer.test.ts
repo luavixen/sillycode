@@ -76,7 +76,7 @@ test('render: link spans multiple lines', () => {
   // nobody should ever do this, but this behaviour is defined
   // note that the href only contains the current line
   expect(render(parse('[url]https://example.com\nthis is a link[/url] teehee')))
-    .toBe('<div><a href="https://example.com">https://example.com</a></div><div><a href="this is a link">this is a link</a> teehee</div>');
+    .toBe('<div><a href="https://example.comthis is a link">https://example.com</a></div><div><a href="https://example.comthis is a link">this is a link</a> teehee</div>');
 });
 
 test('render: incorrectly nested tags', () => {
