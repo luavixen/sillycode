@@ -89,7 +89,7 @@ export type Part =
 /** lookup table for style tags like [b] or [/i] */
 var styleParts = Object.create(null) as Record<string, StylePart>;
 
-function addStyle(text: string, kind: StyleKind) {
+function addStyle(text: string, kind: StyleKind): void {
   styleParts[      text] = { type: 'style', style: kind, enable: true  };
   styleParts['/' + text] = { type: 'style', style: kind, enable: false };
 }
@@ -103,7 +103,7 @@ addStyle('url', StyleKind.LINK);
 /** lookup table for emote tags like [:)] or [:D] */
 var emoteParts = Object.create(null) as Record<string, EmotePart>;
 
-function addEmote(text: string, kind: EmoteKind) {
+function addEmote(text: string, kind: EmoteKind): void {
   emoteParts[text] = { type: 'emote', emote: kind };
 }
 

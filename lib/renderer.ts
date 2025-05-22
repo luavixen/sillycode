@@ -184,7 +184,7 @@ export function render(parts: Part[], isEditor?: boolean): string {
   }
 
   // handles text parts
-  function onText(part: TextPart) {
+  function onText(part: TextPart): void {
     // escape the text for HTML
     var text = escapeHtml(part.text);
 
@@ -196,14 +196,14 @@ export function render(parts: Part[], isEditor?: boolean): string {
   }
 
   // handles escape parts
-  function onEscape(part: EscapePart) {
+  function onEscape(part: EscapePart): void {
     // emit the backslash if isEditor is true
     // we don't need to do anything else! it's handled by the parser
     meta('\\');
   }
 
   // handles newline parts
-  function onNewline(part: NewlinePart) {
+  function onNewline(part: NewlinePart): void {
     // close all elements used for styling to get back to the root of the tree
     closeAll(elements);
 
@@ -215,7 +215,7 @@ export function render(parts: Part[], isEditor?: boolean): string {
   }
 
   // handles style parts
-  function onStyle(part: StylePart) {
+  function onStyle(part: StylePart): void {
     // links are a special case
     if (part.style === StyleKind.LINK) {
       if (part.enable) {
@@ -248,7 +248,7 @@ export function render(parts: Part[], isEditor?: boolean): string {
   }
 
   // handles color parts
-  function onColor(part: ColorPart) {
+  function onColor(part: ColorPart): void {
     if (part.enable) {
       meta('[color=' + part.color + ']');
       push({ name: 'span', color: part.color });
@@ -259,7 +259,7 @@ export function render(parts: Part[], isEditor?: boolean): string {
   }
 
   // handles emote parts
-  function onEmote(part: EmotePart) {
+  function onEmote(part: EmotePart): void {
     if (isEditor) {
       html += '<span class="sillycode-emote" style="background-image: url(/static/emoticons/' + part.emote + '.png)">[' + emoteKindToTag[part.emote] + ']</span>';
     } else {
