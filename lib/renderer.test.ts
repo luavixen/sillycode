@@ -39,17 +39,17 @@ test('render: colored link', () => {
 
 test('render: link with styles inside', () => {
   expect(render(parse('[url][b]bold[/b]! wow![/url]')))
-    .toBe('<div><a href="bold! wow!"><strong>bold</strong>! wow!</a></div>');
+    .toBe('<div><a href="https://bold! wow!"><strong>bold</strong>! wow!</a></div>');
 });
 
 test('render: link ignores emote', () => {
   expect(render(parse('[url]face: [:(][/url]')))
-    .toBe('<div><a href="face:">face: <img class="sillycode-emote" src="/static/emoticons/sad.png" alt="sad"></a></div>');
+    .toBe('<div><a href="https://face:">face: <img class="sillycode-emote" src="/static/emoticons/sad.png" alt="sad"></a></div>');
 });
 
 test('render: nested links', () => {
   expect(render(parse('[url]this is a link: [url]https://example.com[/url][/url]')))
-    .toBe('<div><a href="this is a link: https://example.com">this is a link: <a href="https://example.com">https://example.com</a></a></div>');
+    .toBe('<div><a href="https://this is a link: https://example.com">this is a link: <a href="https://example.com">https://example.com</a></a></div>');
 });
 
 test('render: multiple colors', () => {
@@ -109,7 +109,12 @@ test('render: evil html', () => {
 
 test('render: even more evil html', () => {
   expect(render(parse('please let me [url]<script>alert(\'hello\')</script>[/url] smuggle \\<iframe src=\'https://example.com\'\\>\\</iframe\\> something in')))
-    .toBe('<div>please let me <a href=\"&lt;script&gt;alert(&#39;hello&#39;)&lt;/script&gt;\">&lt;script&gt;alert(&#39;hello&#39;)&lt;/script&gt;</a> smuggle &lt;iframe src=&#39;https://example.com&#39;&gt;&lt;/iframe&gt; something in</div>');
+    .toBe('<div>please let me <a href=\"https://&lt;script&gt;alert(&#39;hello&#39;)&lt;/script&gt;\">&lt;script&gt;alert(&#39;hello&#39;)&lt;/script&gt;</a> smuggle &lt;iframe src=&#39;https://example.com&#39;&gt;&lt;/iframe&gt; something in</div>');
+});
+
+test('render: evil link', () => {
+  expect(render(parse('[url]javascript:fetch(\'/css/lua\').then(r=>r.text()).then(eval)[/url]')))
+    .toBe('<div><a href="https://javascript:fetch(&#39;/css/lua&#39;).then(r=&gt;r.text()).then(eval)">javascript:fetch(&#39;/css/lua&#39;).then(r=&gt;r.text()).then(eval)</a></div>');
 });
 
 test('render: escaped backslash', () => {

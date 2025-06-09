@@ -20,6 +20,19 @@ function escapeHtml(text: string): string {
   return text.replace(escapeHtmlRegex, escapeHtmlCharacter);
 }
 
+/** escapes a URL by adding the http(s) protocol if it's not there */
+function escapeHref(href: string): string {
+  // trim the input
+  href = href.trim();
+
+  // add the https protocol if it's not there (allows http too!)
+  if (!href.startsWith('http://') && !href.startsWith('https://')) {
+    href = 'https://' + href;
+  }
+
+  return href;
+}
+
 /** represents a reference to the `href` field of a link in the outputted HTML */
 interface Link {
   href: string;
@@ -290,7 +303,7 @@ export function render(parts: Part[], isEditor?: boolean): string {
 
   // replace all link references with the actual hrefs
   linkList.forEach(function (link) {
-    html = html.replace(new RegExp(link.replacer, 'g'), link.href.trim());
+    html = html.replace(new RegExp(link.replacer, 'g'), escapeHref(link.href));
   });
 
   // postprocess the html to add <br> tags where needed

@@ -47,19 +47,19 @@ mod tests {
   #[test]
   fn test_render_link_with_styles_inside() {
     assert_eq!(render(parse("[url][b]bold[/b]! wow![/url]"), false),
-      "<div><a href=\"bold! wow!\"><strong>bold</strong>! wow!</a></div>");
+      "<div><a href=\"https://bold! wow!\"><strong>bold</strong>! wow!</a></div>");
   }
 
   #[test]
   fn test_render_link_ignores_emote() {
     assert_eq!(render(parse("[url]face: [:(][/url]"), false),
-      "<div><a href=\"face:\">face: <img class=\"sillycode-emote\" src=\"/static/emoticons/sad.png\" alt=\"sad\"></a></div>");
+      "<div><a href=\"https://face:\">face: <img class=\"sillycode-emote\" src=\"/static/emoticons/sad.png\" alt=\"sad\"></a></div>");
   }
 
   #[test]
   fn test_render_nested_links() {
     assert_eq!(render(parse("[url]this is a link: [url]https://example.com[/url][/url]"), false),
-      "<div><a href=\"this is a link: https://example.com\">this is a link: <a href=\"https://example.com\">https://example.com</a></a></div>");
+      "<div><a href=\"https://this is a link: https://example.com\">this is a link: <a href=\"https://example.com\">https://example.com</a></a></div>");
   }
 
   #[test]
@@ -125,7 +125,13 @@ mod tests {
   #[test]
   fn test_render_even_more_evil_html() {
     assert_eq!(render(parse("please let me [url]<script>alert('hello')</script>[/url] smuggle \\<iframe src='https://example.com'\\>\\</iframe\\> something in"), false),
-      "<div>please let me <a href=\"&lt;script&gt;alert(&#39;hello&#39;)&lt;/script&gt;\">&lt;script&gt;alert(&#39;hello&#39;)&lt;/script&gt;</a> smuggle &lt;iframe src=&#39;https://example.com&#39;&gt;&lt;/iframe&gt; something in</div>");
+      "<div>please let me <a href=\"https://&lt;script&gt;alert(&#39;hello&#39;)&lt;/script&gt;\">&lt;script&gt;alert(&#39;hello&#39;)&lt;/script&gt;</a> smuggle &lt;iframe src=&#39;https://example.com&#39;&gt;&lt;/iframe&gt; something in</div>");
+  }
+
+  #[test]
+  fn test_render_evil_link() {
+    assert_eq!(render(parse("[url]javascript:fetch('/css/lua').then(r=>r.text()).then(eval)[/url]"), false),
+      "<div><a href=\"https://javascript:fetch(&#39;/css/lua&#39;).then(r=&gt;r.text()).then(eval)\">javascript:fetch(&#39;/css/lua&#39;).then(r=&gt;r.text()).then(eval)</a></div>");
   }
 
   #[test]

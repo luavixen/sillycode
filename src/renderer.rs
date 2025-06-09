@@ -19,6 +19,19 @@ fn escape_html(text: &str) -> String {
   result
 }
 
+/// escapes a URL by adding the http(s) protocol if it's not there
+fn escape_href(href: &str) -> String {
+  // trim the input
+  let href = href.trim();
+
+  // add the https protocol if it's not there (allows http too!)
+  if !href.starts_with("http://") && !href.starts_with("https://") {
+    format!("https://{}", href)
+  } else {
+    href.to_string()
+  }
+}
+
 /// represents a reference to the `href` field of a link in the outputted HTML
 #[derive(Debug, Clone)]
 struct Link(Rc<RefCell<Option<LinkData>>>);
@@ -348,7 +361,7 @@ impl Renderer {
 
     // replace all link references with the actual hrefs
     for link in self.link_list.iter().map(|link| link.take()) {
-      self.html = self.html.replace(&link.replacer, link.href.trim());
+      self.html = self.html.replace(&link.replacer, &escape_href(&link.href));
     }
 
     // postprocess the html to add <br> tags where needed
